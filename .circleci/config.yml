@@ -1,0 +1,38 @@
+version: 2.1
+
+executors:
+  cpp-executor:
+    docker:
+      - image: gcc:latest  # Using GCC Docker image for C++ compilation
+    working_directory: ~/project
+
+jobs:
+  build-and-test:
+    executor: cpp-executor
+    steps:
+      - checkout  # Clone GitHub repo into the CircleCI environment
+      - run:
+          name: Install Dependencies
+          command: |
+            apt update && apt install -y cmake g++
+      - run:
+          name: Build Project
+          command: |
+            mkdir -p build
+            cd build
+            cmake ..
+            make
+      - run:
+          name: Run Unit Tests
+          command: |
+            cd build
+            ctest --output-on-failure
+      - store_test_results:
+          path: build/test-results  # Store test results for CircleCI UI
+
+workflows:
+  version: 2
+  test-and-coverage:
+    jobs:
+      - build-and-test
+
