@@ -3,18 +3,25 @@ version: 2.1
 executors:
   cpp-executor:
     docker:
-      - image: gcc:latest  # Using GCC Docker image for C++ compilation
-    working_directory: ~/project
+      - image: ubuntu:latest
+    resource_class: small
+    environment:
+      CXX: g++
+      CC: gcc
 
 jobs:
   build-and-test:
     executor: cpp-executor
     steps:
-      - checkout  # Clone GitHub repo into the CircleCI environment
+      - checkout
       - run:
           name: Install Dependencies
           command: |
-            apt update && apt install -y cmake g++
+            apt-get update && apt-get install -y cmake g++ git make
+            apt-get install -y libgtest-dev
+            cd /usr/src/googletest
+            cmake . && make
+            cp lib/*.a /usr/lib
       - run:
           name: Build Project
           command: |
